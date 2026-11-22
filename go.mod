@@ -11,7 +11,7 @@ require (
 	github.com/grafana/grafana-prometheus-datasource/pkg/promlib v0.0.27
 	github.com/magefile/mage v1.17.2
 	github.com/prometheus/common v0.74.0
-	github.com/prometheus/prometheus v0.315.0
+	github.com/prometheus/prometheus v0.316.0
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/sync v0.25.0
 	k8s.io/kube-openapi v0.0.0-20261104182252-5bee61fc5225
