@@ -1,0 +1,9 @@
+{
+  "extends": "./.config/tsconfig.json",
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "rootDir": "."
+  }
+}

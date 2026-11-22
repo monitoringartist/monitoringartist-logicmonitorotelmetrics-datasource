@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="lm-logo-gradient" gradientUnits="userSpaceOnUse" x1="4" y1="80" x2="96" y2="20">
+      <stop offset="0" stop-color="#F05A28"/>
+      <stop offset="1" stop-color="#FBCA0A"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#lm-logo-gradient)" d="M4 20H20V64H40V80H4ZM44 80V20H60L70 40L80 20H96V80H80V48L70 66L60 48V80Z"/>
+</svg>

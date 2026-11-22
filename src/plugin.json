@@ -1,0 +1,86 @@
+{
+  "type": "datasource",
+  "name": "LogicMonitor OTel Metrics",
+  "id": "monitoringartist-logicmonitorotelmetrics-datasource",
+  "category": "tsdb",
+  "executable": "gpx_monitoringartist-logicmonitorotelmetrics-datasource",
+  "includes": [],
+  "metrics": true,
+  "alerting": false,
+  "annotations": false,
+  "backend": true,
+  "queryOptions": {
+    "minInterval": true
+  },
+  "multiValueFilterOperators": true,
+  "info": {
+    "description": "Query LogicMonitor OTel metrics with Prometheus query language",
+    "version": "%VERSION%",
+    "updated": "%TODAY%",
+    "author": {
+      "name": "Monitoring Artist",
+      "url": "https://monitoringartist.com"
+    },
+    "keywords": [
+      "logicmonitor",
+      "lm",
+      "opentelemetry",
+      "otel",
+      "prometheus",
+      "promql",
+      "metrics",
+      "timeseries",
+      "monitoring",
+      "observability",
+      "monitoringartist"
+    ],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "screenshots": [
+      {
+        "name": "Data source configuration",
+        "path": "img/datasource-configuration.png"
+      },
+      {
+        "name": "Explore query",
+        "path": "img/explore.png"
+      }
+    ],
+    "links": [
+      {
+        "name": "GitHub",
+        "url": "https://github.com/monitoringartist/monitoringartist-logicmonitorotelmetrics-datasource"
+      },
+      {
+        "name": "Report an issue",
+        "url": "https://github.com/monitoringartist/monitoringartist-logicmonitorotelmetrics-datasource/issues"
+      }
+    ]
+  },
+  "dependencies": {
+    "grafanaDependency": ">=12.3.0-0"
+  },
+  "languages": [
+    "en-US",
+    "cs-CZ",
+    "de-DE",
+    "es-ES",
+    "fr-FR",
+    "hu-HU",
+    "id-ID",
+    "it-IT",
+    "ja-JP",
+    "ko-KR",
+    "nl-NL",
+    "pl-PL",
+    "pt-BR",
+    "pt-PT",
+    "ru-RU",
+    "sv-SE",
+    "tr-TR",
+    "zh-Hans",
+    "zh-Hant"
+  ]
+}

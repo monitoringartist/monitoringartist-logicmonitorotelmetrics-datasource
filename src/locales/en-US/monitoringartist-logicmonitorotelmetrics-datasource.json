@@ -1,0 +1,99 @@
+{
+  "config-editor": {
+    "advanced": {
+      "cache": {
+        "title": "Metadata cache"
+      },
+      "cache-max-entries": {
+        "description": "Number of metadata responses kept in the cache.",
+        "label": "Cache size"
+      },
+      "cache-ttl-seconds": {
+        "description": "How long metric names, labels and label values are cached.",
+        "label": "Cache TTL"
+      },
+      "default": "Default: {{value}}.",
+      "description": "Optional tuning for timeouts, retries and caching. Leave a field empty to use its default.",
+      "lm-timeout": {
+        "description": "Time allowed for each LogicMonitor API call, including all chunks of a long time range.",
+        "label": "Timeout"
+      },
+      "max-concurrent-requests": {
+        "description": "API requests this data source can have in flight at once.",
+        "label": "Concurrent requests"
+      },
+      "max-rate-limit-wait-seconds": {
+        "description": "Longest wait for the rate-limit window to reset. Requests that would wait longer fail immediately.",
+        "label": "Rate-limit wait"
+      },
+      "max-retry-attempts": {
+        "description": "Includes the first attempt. Retries on rate limiting, 502, 503, 504 and network errors.",
+        "label": "Attempts per request"
+      },
+      "query-range-workers": {
+        "description": "Long time ranges are split into 25-day chunks. Number of chunks fetched in parallel per query.",
+        "label": "Parallel chunks"
+      },
+      "requests": {
+        "title": "Requests"
+      },
+      "retries": {
+        "title": "Retries and rate limiting"
+      },
+      "setting-error": "Enter a whole number between {{min}} and {{max}}.",
+      "title": "Advanced",
+      "unit": {
+        "entries": "entries",
+        "seconds": "seconds"
+      }
+    },
+    "auth": {
+      "access-id": {
+        "description": "The access ID of the LMv1 API token.",
+        "label": "Access ID"
+      },
+      "access-key": {
+        "description": "The access key of the LMv1 API token.",
+        "label": "Access key"
+      },
+      "description": "Create an API token in LogicMonitor under Settings > Users and Roles > API Tokens.",
+      "method": {
+        "bearer": "Bearer token",
+        "bearer-description": "Recommended. A single LogicMonitor API token.",
+        "label": "Authentication method",
+        "lmv1": "LMv1 (access ID and key)",
+        "lmv1-description": "A LogicMonitor API token made of an access ID and an access key."
+      },
+      "title": "Authentication",
+      "token": {
+        "description": "The bearer token shown when the API token was created.",
+        "label": "Bearer token"
+      }
+    },
+    "connection": {
+      "account": {
+        "description": "The first part of your portal address. For https://acme.logicmonitor.com, enter acme.",
+        "error-full-domain": "Enter only \"acme\", not the full domain",
+        "error-invalid": "Use only lowercase letters, numbers and hyphens, without a leading or trailing hyphen",
+        "label": "Account name",
+        "placeholder": "acme"
+      },
+      "portal-url": "Portal URL:",
+      "title": "Connection"
+    }
+  },
+  "query-editor": {
+    "explain": "Explain",
+    "kick-start": "Kick start your query",
+    "mode": {
+      "builder": "Builder",
+      "code": "Code"
+    },
+    "parse-modal": {
+      "body": "There is a syntax error, or the query structure cannot be visualized when switching to the builder mode. Parts of the query may be lost.",
+      "confirm": "Continue",
+      "title": "Parsing error: Switch to the builder mode?"
+    },
+    "run-queries": "Run queries"
+  }
+}

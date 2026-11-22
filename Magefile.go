@@ -1,0 +1,72 @@
+//go:build mage
+// +build mage
+
+package main
+
+import (
+	"os"
+	"runtime"
+
+	build "github.com/grafana/grafana-plugin-sdk-go/build"
+	"github.com/magefile/mage/mg"
+)
+
+// Default configures the default target.
+var Default = BuildAll
+
+// Frozen FIPS 140-3 crypto module. Runtime FIPS disabled by default in go.mod.
+// Set GOFIPS140 in the environment to build with another module version (or off).
+func init() {
+	if _, ok := os.LookupEnv("GOFIPS140"); !ok {
+		os.Setenv("GOFIPS140", "latest")
+	}
+}
+
+// BuildAll builds all default targets plus linux/s390x and windows/arm64,
+// to support bundling with Grafana builds on those platforms. This overrides
+// the buildAll from grafana-plugin-sdk-go.
+func BuildAll() {
+	b := build.Build{}
+	mg.Deps(b.Linux, b.Windows, b.Darwin, b.DarwinARM64, b.LinuxARM64, b.LinuxARM, LinuxS390X, WindowsARM64, b.GenerateManifestFile)
+}
+
+// BuildLocal builds only for the host OS and architecture (for fast local development).
+func BuildLocal() error {
+	return build.Build{}.Custom(runtime.GOOS, runtime.GOARCH)
+}
+
+// LinuxS390X builds the back-end plugin for Linux on s390x (IBM Z).
+func LinuxS390X() error {
+	return build.Build{}.Custom("linux", "s390x")
+}
+
+// WindowsARM64 builds the back-end plugin for Windows on arm64.
+func WindowsARM64() error {
+	return build.Build{}.Custom("windows", "arm64")
+}
+
+// Test() wraps the plugin SDK's Test to make it accessible since we're
+// no longer using mage:import
+func Test() error {
+	return build.Test();
+}
+
+// Coverage() wraps the plugin SDK's Coverage to make it accessible since we're
+// no longer using mage:import
+func Coverage() error {
+	return build.Coverage()
+}
+
+// TestRace() wraps the plugin SDK's Test to make it accessible since we're
+// no longer using mage:import
+func TestRace() error {
+	return build.TestRace();
+}
+
+func Debugger() error {
+	return build.Debugger()
+}
+
+func ReloadPlugin() error {
+	return build.ReloadPlugin()
+}

@@ -1,0 +1,245 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (typecheck, lint, test, build)
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Run checks in parallel
+        run: |
+          npm run typecheck &
+          npm run lint &
+          npm run test:ci &
+          wait
+      - run: npm run build
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-frontend
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  backend:
+    name: Backend (lint, test, build)
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.15.0
+          args: ./...
+          skip-cache: false
+      - name: Test (race detector & coverage threshold)
+        run: |
+          go test -race -coverprofile=/tmp/coverage.out -covermode=atomic ./pkg/...
+          COVERAGE=$(go tool cover -func=/tmp/coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+          echo "Total backend test coverage: ${COVERAGE}%"
+          THRESHOLD=75.0
+          awk -v cov="$COVERAGE" -v thresh="$THRESHOLD" 'BEGIN {
+            if (cov < thresh) {
+              printf "Error: coverage %.1f%% is below threshold %.1f%%\n", cov, thresh;
+              exit 1;
+            } else {
+              printf "Coverage check passed: %.1f%% >= %.1f%%\n", cov, thresh;
+            }
+          }'
+      - name: Build
+        uses: magefile/mage-action@a662bd8c29d8106879588cfff83b2faf6e6f59db # v4.0.0
+        with:
+          version: latest
+          args: buildAll
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-backend
+          path: |
+            dist/gpx_*
+            dist/go_plugin_build_manifest
+          if-no-files-found: error
+          retention-days: 7
+
+  govulncheck:
+    name: Go vulnerability check
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1.1.0
+        with:
+          repo-checkout: false
+          go-version-input: ''
+          go-version-file: go.mod
+          go-package: ./...
+          cache: false
+
+  package:
+    name: Package and validate
+    needs: [frontend, backend]
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 15
+    outputs:
+      plugin-id: ${{ steps.metadata.outputs.plugin-id }}
+      plugin-version: ${{ steps.metadata.outputs.plugin-version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: Get plugin metadata
+        id: metadata
+        run: |
+          PLUGIN_ID=$(jq -r .id dist/plugin.json)
+          PLUGIN_VERSION=$(jq -r .info.version dist/plugin.json)
+          {
+            echo "plugin-id=${PLUGIN_ID}"
+            echo "plugin-version=${PLUGIN_VERSION}"
+            echo "archive=${PLUGIN_ID}-${PLUGIN_VERSION}.zip"
+          } >> "$GITHUB_OUTPUT"
+      - name: Package plugin
+        env:
+          PLUGIN_ID: ${{ steps.metadata.outputs.plugin-id }}
+          ARCHIVE: ${{ steps.metadata.outputs.archive }}
+        run: |
+          chmod +x dist/gpx_*
+          cp -r dist "$PLUGIN_ID"
+          zip -qr "$ARCHIVE" "$PLUGIN_ID"
+      - name: Run plugin validator
+        env:
+          ARCHIVE: ${{ steps.metadata.outputs.archive }}
+        run: |
+          git archive --format=zip -o /tmp/source.zip HEAD
+          python3 -m http.server 18123 --bind 127.0.0.1 --directory /tmp >/dev/null 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true; rm -f /tmp/source.zip' EXIT
+          npx -y @grafana/plugin-validator@0.53.12 -ghaOutput -sourceCodeUri "http://127.0.0.1:18123/source.zip" "$ARCHIVE"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  resolve-versions:
+    name: Resolve e2e Grafana versions
+    needs: package
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 3
+    outputs:
+      matrix: ${{ steps.resolve-versions.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: resolve-versions
+        uses: grafana/plugin-actions/e2e-version@4237582c38fd642d5917edf9f9b7c94597b56661 # e2e-version/v3.2.6
+        with:
+          version-resolver-type: plugin-grafana-dependency
+
+  e2e:
+    name: e2e grafana@${{ matrix.GRAFANA_IMAGE.version }}
+    needs: [package, resolve-versions]
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        GRAFANA_IMAGE: ${{ fromJson(needs.resolve-versions.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+      - run: chmod +x dist/gpx_*
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Get Playwright browser path
+        id: playwright-cache
+        run: echo "dir=$(npx playwright env-path)" >> $GITHUB_OUTPUT
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Start Grafana
+        env:
+          GRAFANA_IMAGE: ${{ matrix.GRAFANA_IMAGE.name }}
+          GRAFANA_VERSION: ${{ matrix.GRAFANA_IMAGE.version }}
+          ANONYMOUS_AUTH_ENABLED: 'false'
+          DEVELOPMENT: 'false'
+        run: docker compose up -d --build
+      - uses: grafana/plugin-actions/wait-for-grafana@4205a0824a13b71fdb9b9b49f28f5f72b754f81f # wait-for-grafana/v1.0.5
+        with:
+          url: http://localhost:3000/login
+      - run: npx playwright install chromium --with-deps
+      - name: Run Playwright tests
+        id: run-tests
+        run: npm run e2e
+      - name: Grafana server log
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        run: docker compose logs grafana > grafana-server.log 2>&1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        with:
+          name: e2e-${{ matrix.GRAFANA_IMAGE.name }}-${{ matrix.GRAFANA_IMAGE.version }}
+          path: |
+            playwright-report/
+            test-results/
+            grafana-server.log
+          retention-days: 7
+      - name: Stop Grafana
+        if: always() && steps.run-tests.outcome == 'failure'
+        run: docker compose down

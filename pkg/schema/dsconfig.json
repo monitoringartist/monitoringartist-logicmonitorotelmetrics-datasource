@@ -1,0 +1,288 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/dsconfig/refs/tags/dsconfig/v0.0.12/dsconfig/schema.json",
+  "schemaVersion": "v1",
+  "pluginType": "monitoringartist-logicmonitorotelmetrics-datasource",
+  "pluginName": "LogicMonitor OTel Metrics",
+  "docURL": "https://github.com/monitoringartist/monitoringartist-logicmonitorotelmetrics-datasource#readme",
+  "fields": [
+    {
+      "id": "jsonData_account",
+      "key": "account",
+      "label": "Account name",
+      "description": "The first part of your portal address. For https://acme.logicmonitor.com, enter acme.",
+      "valueType": "string",
+      "target": "jsonData",
+      "required": true,
+      "validations": [
+        {
+          "type": "pattern",
+          "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "message": "Use only lowercase letters, numbers and hyphens, without a leading or trailing hyphen."
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "acme"
+      }
+    },
+    {
+      "id": "jsonData_authType",
+      "key": "authType",
+      "label": "Authentication method",
+      "description": "Choose an authentication method to access LogicMonitor.",
+      "valueType": "string",
+      "target": "jsonData",
+      "defaultValue": "bearer",
+      "validations": [
+        {
+          "type": "allowedValues",
+          "values": [
+            "bearer",
+            "lmv1"
+          ]
+        }
+      ],
+      "ui": {
+        "component": "select",
+        "options": [
+          {
+            "label": "Bearer token",
+            "value": "bearer"
+          },
+          {
+            "label": "LMv1 (access ID and key)",
+            "value": "lmv1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "secureJsonData_token",
+      "key": "token",
+      "label": "Bearer token",
+      "description": "The bearer token shown when the API token was created.",
+      "valueType": "string",
+      "target": "secureJsonData",
+      "dependsOn": "jsonData_authType == 'bearer'",
+      "requiredWhen": "jsonData_authType == 'bearer'",
+      "ui": {
+        "component": "input"
+      }
+    },
+    {
+      "id": "jsonData_accessId",
+      "key": "accessId",
+      "label": "Access ID",
+      "description": "The access ID of the LMv1 API token.",
+      "valueType": "string",
+      "target": "jsonData",
+      "dependsOn": "jsonData_authType == 'lmv1'",
+      "requiredWhen": "jsonData_authType == 'lmv1'",
+      "ui": {
+        "component": "input"
+      }
+    },
+    {
+      "id": "secureJsonData_accessKey",
+      "key": "accessKey",
+      "label": "Access key",
+      "description": "The access key of the LMv1 API token.",
+      "valueType": "string",
+      "target": "secureJsonData",
+      "dependsOn": "jsonData_authType == 'lmv1'",
+      "requiredWhen": "jsonData_authType == 'lmv1'",
+      "ui": {
+        "component": "input"
+      }
+    },
+    {
+      "id": "jsonData_enableSecureSocksProxy",
+      "key": "enableSecureSocksProxy",
+      "label": "Secure Socks Proxy",
+      "description": "Route requests to this data source through Grafana's Secure Socks Proxy (Private Data Source Connect).",
+      "valueType": "boolean",
+      "target": "jsonData",
+      "defaultValue": false,
+      "ui": {
+        "component": "switch"
+      }
+    },
+    {
+      "id": "jsonData_lmTimeout",
+      "key": "lmTimeout",
+      "label": "Timeout",
+      "description": "Time allowed for each LogicMonitor API call in seconds, including all chunks of a long time range.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 60,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 600
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "60"
+      }
+    },
+    {
+      "id": "jsonData_queryRangeWorkers",
+      "key": "queryRangeWorkers",
+      "label": "Parallel chunks",
+      "description": "Long time ranges are split into 25-day chunks. Number of chunks fetched in parallel per query.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 10,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 50
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "10"
+      }
+    },
+    {
+      "id": "jsonData_maxConcurrentRequests",
+      "key": "maxConcurrentRequests",
+      "label": "Concurrent requests",
+      "description": "API requests this data source can have in flight at once.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 16,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 100
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "16"
+      }
+    },
+    {
+      "id": "jsonData_maxRetryAttempts",
+      "key": "maxRetryAttempts",
+      "label": "Attempts per request",
+      "description": "Includes the first attempt. Retries on rate limiting, 502, 503, 504 and network errors.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 3,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 10
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "3"
+      }
+    },
+    {
+      "id": "jsonData_maxRateLimitWaitSeconds",
+      "key": "maxRateLimitWaitSeconds",
+      "label": "Rate-limit wait",
+      "description": "Longest wait in seconds for the rate-limit window to reset.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 2,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 30
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "2"
+      }
+    },
+    {
+      "id": "jsonData_cacheTTLSeconds",
+      "key": "cacheTTLSeconds",
+      "label": "Cache TTL",
+      "description": "How long metric names, labels and label values are cached in seconds.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 60,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 3600
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "60"
+      }
+    },
+    {
+      "id": "jsonData_cacheMaxEntries",
+      "key": "cacheMaxEntries",
+      "label": "Cache size",
+      "description": "Number of metadata responses kept in the cache.",
+      "valueType": "number",
+      "target": "jsonData",
+      "defaultValue": 1000,
+      "validations": [
+        {
+          "type": "range",
+          "min": 1,
+          "max": 100000
+        }
+      ],
+      "ui": {
+        "component": "input",
+        "placeholder": "1000"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "id": "connection",
+      "title": "Connection",
+      "order": 1,
+      "fieldRefs": [
+        "jsonData_account"
+      ]
+    },
+    {
+      "id": "authentication",
+      "title": "Authentication",
+      "order": 2,
+      "fieldRefs": [
+        "jsonData_authType",
+        "secureJsonData_token",
+        "jsonData_accessId",
+        "secureJsonData_accessKey"
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced",
+      "order": 3,
+      "optional": true,
+      "fieldRefs": [
+        "jsonData_enableSecureSocksProxy",
+        "jsonData_lmTimeout",
+        "jsonData_queryRangeWorkers",
+        "jsonData_maxConcurrentRequests",
+        "jsonData_maxRetryAttempts",
+        "jsonData_maxRateLimitWaitSeconds",
+        "jsonData_cacheTTLSeconds",
+        "jsonData_cacheMaxEntries"
+      ]
+    }
+  ]
+}
