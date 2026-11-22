@@ -1,0 +1,43 @@
+apiVersion: 1
+
+# Replace the placeholder values below before starting Grafana.
+# account is only the LogicMonitor account name, e.g. acme for https://acme.logicmonitor.com.
+
+datasources:
+  - name: 'logicmonitor-otelmetrics'
+    uid: 'logicmonitor-otelmetrics'
+    type: 'monitoringartist-logicmonitorotelmetrics-datasource'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      account: 'acme'
+      authType: 'bearer'
+      lmTimeout: 60
+      # Optional advanced limits (defaults shown)
+      queryRangeWorkers: 10
+      maxConcurrentRequests: 16
+      maxRetryAttempts: 3
+      maxRateLimitWaitSeconds: 2
+      cacheTTLSeconds: 60
+      cacheMaxEntries: 1000
+    secureJsonData:
+      token: '<LM_API_V3_BEARER_TOKEN>'
+
+  - name: 'logicmonitor-otelmetrics-lmv1'
+    uid: 'logicmonitor-otelmetrics-lmv1'
+    type: 'monitoringartist-logicmonitorotelmetrics-datasource'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      account: 'acme'
+      authType: 'lmv1'
+      accessId: '<LM_ACCESS_ID>'
+      lmTimeout: 60
+    secureJsonData:
+      accessKey: '<LM_ACCESS_KEY>'

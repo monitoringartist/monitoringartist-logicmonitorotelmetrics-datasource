@@ -1,0 +1,99 @@
+{
+  "spec": {
+    "type": "object",
+    "properties": {
+      "jsonData": {
+        "type": "object",
+        "required": [
+          "account"
+        ],
+        "properties": {
+          "accessId": {
+            "description": "The access ID of the LMv1 API token.",
+            "type": "string",
+            "x-dsconfig-depends-on": "jsonData_authType == 'lmv1'",
+            "x-dsconfig-required-when": "jsonData_authType == 'lmv1'"
+          },
+          "account": {
+            "description": "The first part of your portal address. For https://acme.logicmonitor.com, enter acme.",
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$"
+          },
+          "authType": {
+            "description": "Choose an authentication method to access LogicMonitor.",
+            "type": "string",
+            "default": "bearer",
+            "enum": [
+              "bearer",
+              "lmv1"
+            ]
+          },
+          "cacheMaxEntries": {
+            "description": "Number of metadata responses kept in the cache.",
+            "type": "number",
+            "default": 1000,
+            "maximum": 100000,
+            "minimum": 1
+          },
+          "cacheTTLSeconds": {
+            "description": "How long metric names, labels and label values are cached in seconds.",
+            "type": "number",
+            "default": 60,
+            "maximum": 3600,
+            "minimum": 1
+          },
+          "enableSecureSocksProxy": {
+            "description": "Route requests to this data source through Grafana's Secure Socks Proxy (Private Data Source Connect).",
+            "type": "boolean",
+            "default": false
+          },
+          "lmTimeout": {
+            "description": "Time allowed for each LogicMonitor API call in seconds, including all chunks of a long time range.",
+            "type": "number",
+            "default": 60,
+            "maximum": 600,
+            "minimum": 1
+          },
+          "maxConcurrentRequests": {
+            "description": "API requests this data source can have in flight at once.",
+            "type": "number",
+            "default": 16,
+            "maximum": 100,
+            "minimum": 1
+          },
+          "maxRateLimitWaitSeconds": {
+            "description": "Longest wait in seconds for the rate-limit window to reset.",
+            "type": "number",
+            "default": 2,
+            "maximum": 30,
+            "minimum": 1
+          },
+          "maxRetryAttempts": {
+            "description": "Includes the first attempt. Retries on rate limiting, 502, 503, 504 and network errors.",
+            "type": "number",
+            "default": 3,
+            "maximum": 10,
+            "minimum": 1
+          },
+          "queryRangeWorkers": {
+            "description": "Long time ranges are split into 25-day chunks. Number of chunks fetched in parallel per query.",
+            "type": "number",
+            "default": 10,
+            "maximum": 50,
+            "minimum": 1
+          }
+        }
+      }
+    }
+  },
+  "secureValues": [
+    {
+      "key": "token",
+      "description": "The bearer token shown when the API token was created."
+    },
+    {
+      "key": "accessKey",
+      "description": "The access key of the LMv1 API token."
+    }
+  ]
+}

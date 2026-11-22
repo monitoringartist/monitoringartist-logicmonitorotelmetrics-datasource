@@ -1,0 +1,31 @@
+{
+  "examples": {
+    "": {
+      "summary": "Bearer token authentication",
+      "description": "Connect to LogicMonitor using a bearer API token.",
+      "value": {
+        "jsonData": {
+          "account": "acme",
+          "authType": "bearer"
+        },
+        "secureJsonData": {
+          "token": "REPLACE_WITH_BEARER_TOKEN"
+        }
+      }
+    },
+    "lmv1": {
+      "summary": "LMv1 authentication",
+      "description": "Connect to LogicMonitor using an LMv1 access ID and access key.",
+      "value": {
+        "jsonData": {
+          "accessId": "REPLACE_WITH_ACCESS_ID",
+          "account": "acme",
+          "authType": "lmv1"
+        },
+        "secureJsonData": {
+          "accessKey": "REPLACE_WITH_ACCESS_KEY"
+        }
+      }
+    }
+  }
+}

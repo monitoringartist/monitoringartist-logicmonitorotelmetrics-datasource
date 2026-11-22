@@ -1,0 +1,82 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(ci)'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+      exclude:
+        - '@grafana/plugin-e2e'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore'
+      include: scope
+    groups:
+      unit-test:
+        patterns:
+          - '@testing-library/*'
+          - 'jest*'
+          - '@types/jest'
+          - '@swc/*'
+      eslint:
+        patterns:
+          - '@grafana/eslint-config'
+          - 'eslint*'
+          - '@typescript-eslint/*'
+          - '@stylistic/*'
+      e2e:
+        patterns:
+          - '@grafana/plugin-e2e'
+          - '@playwright/test'
+      grafana:
+        patterns:
+          - '@grafana/*'
+        exclude-patterns:
+          - '@grafana/eslint-config'
+          - '@grafana/plugin-e2e'
+        update-types:
+          - minor
+          - patch
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: gomod
+    directories:
+      - /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore'
+      include: scope
+    groups:
+      go-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
